@@ -216,7 +216,8 @@
                                 <div class="grid gap-4">
                     <div v-for="(subject, idx) in studentResult.subjects" :key="idx" class="card overflow-hidden transition-all duration-300 hover:shadow-lg border border-gray-100 group">
                         
-                        <div @click="toggleSubject(subject)" class="p-5 flex justify-between items-center cursor-pointer select-none hover:bg-gray-50 transition relative overflow-hidden">
+                        <div @click="subject.expanded = !subject.expanded" class="p-5 flex justify-between items-center cursor-pointer select-none hover:bg-gray-50 transition relative overflow-hidden">
+
                             <div class="absolute right-0 top-0 w-32 h-32 bg-gradient-to-br from-blue-50 to-transparent rounded-bl-full -mr-10 -mt-10 opacity-50 pointer-events-none"></div>
 
                             <div class="flex items-center gap-4 relative z-10">
