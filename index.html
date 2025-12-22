@@ -213,60 +213,134 @@
                 </div>
 
                 <!-- Subjects -->
-                <div class="grid gap-4">
-                    <div v-for="(subject, idx) in studentResult.subjects" :key="idx" class="card p-5 cursor-pointer hover:border-blue-200 group" @click="toggleSubject(subject)">
-                        <div class="flex justify-between items-center">
-                            <div class="flex items-center gap-5">
-                                <div :class="getGradeColor(calculateGrade(calculateSubjectTotal(subject)))" class="w-14 h-14 rounded-2xl flex items-center justify-center text-white font-bold text-2xl shadow-lg transition-transform group-hover:scale-110">
-                                    {{ calculateGrade(calculateSubjectTotal(subject)) }}
+                                <div class="grid gap-4">
+                    <div v-for="(subject, idx) in studentResult.subjects" :key="idx" class="card overflow-hidden transition-all duration-300 hover:shadow-lg border border-gray-100 group">
+                        
+                        <div @click="toggleSubject(subject)" class="p-5 flex justify-between items-center cursor-pointer select-none hover:bg-gray-50 transition relative overflow-hidden">
+                            <div class="absolute right-0 top-0 w-32 h-32 bg-gradient-to-br from-blue-50 to-transparent rounded-bl-full -mr-10 -mt-10 opacity-50 pointer-events-none"></div>
+
+                            <div class="flex items-center gap-4 relative z-10">
+                                <div class="w-12 h-12 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-sm shadow-sm border border-blue-100 group-hover:scale-110 transition-transform duration-300">
+                                    {{ idx + 1 }}
                                 </div>
                                 <div>
-                                    <h3 class="font-bold text-gray-800 text-lg group-hover:text-blue-600 transition">{{ subject.name }}</h3>
-                                    <p class="text-xs text-gray-500 font-medium bg-gray-100 px-2 py-0.5 rounded inline-block">{{ subject.credit }} หน่วยกิต</p>
+                                    <h3 class="font-bold text-gray-800 text-lg group-hover:text-blue-600 transition leading-tight">
+                                        {{ subject.name }} 
+                                    </h3>
+                                    <div class="flex items-center gap-2 mt-1">
+                                        <span class="text-[10px] text-gray-500 font-medium bg-gray-100 px-2 py-0.5 rounded-full border border-gray-200">
+                                            {{ subject.credit }} หน่วยกิต
+                                        </span>
+                                        <span class="text-[10px] text-gray-400 md:hidden">แตะเพื่อดูรายละเอียด</span>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="text-right">
-                                <div class="text-3xl font-bold text-gray-800">{{ calculateStudentViewTotal(subject).toFixed(2) }}<span class="text-sm text-gray-400 font-normal">/100</span></div>
-                                <div v-if="subject.hideFinal" class="text-[10px] text-orange-500 font-bold bg-orange-50 px-2 py-0.5 rounded-full inline-block mt-1">รอปลายภาค</div>
+                            
+                            <div class="flex items-center gap-4 text-right relative z-10">
+                                <div class="hidden md:block">
+                                    <span class="text-[10px] text-gray-400 block uppercase tracking-wider font-bold">คะแนนรวม</span>
+                                    <span class="font-bold text-xl text-blue-600">{{ calculateStudentViewTotal(subject).toFixed(2) }}</span>
+                                    <span v-if="subject.hideFinal" class="text-[9px] text-orange-400 block font-medium">(รอปลายภาค)</span>
+                                </div>
+
+                                <div class="md:hidden">
+                                    <span class="font-bold text-lg text-blue-600">{{ calculateStudentViewTotal(subject).toFixed(0) }}</span>
+                                </div>
+
+                                <div v-if="!subject.hideFinal" :class="getGradeColor(calculateGrade(calculateSubjectTotal(subject)))" class="w-12 h-12 rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-md transition-transform hover:scale-105 hover:rotate-3">
+                                    {{ calculateGrade(calculateSubjectTotal(subject)) }}
+                                </div>
+                                <div v-else class="w-12 h-12 rounded-xl flex items-center justify-center bg-gray-100 text-gray-400 font-bold text-xl shadow-inner border border-gray-200">
+                                    -
+                                </div>
+                                
+                                <i :class="subject.expanded ? 'rotate-180' : ''" class="fa-solid fa-chevron-down text-gray-300 transition-transform duration-300 ml-1"></i>
                             </div>
                         </div>
                         
-                        <div v-if="subject.expanded" class="mt-5 pt-5 border-t border-dashed border-gray-200 grid md:grid-cols-2 gap-8 bg-gray-50/50 -mx-5 -mb-5 p-6 rounded-b-2xl">
-                            <div>
-                                <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">คะแนนเก็บระหว่างภาค</h4>
-                                <div class="space-y-2">
-                                    <div v-for="u in subject.units" class="bg-white rounded-lg border border-gray-100 shadow-sm overflow-hidden mb-2">
-    <div class="flex justify-between items-center py-2 px-3 bg-gray-50/50">
-        <span class="text-sm font-bold text-gray-700">{{ u.name }}</span>
-        <span class="font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded text-xs">{{ calcUnitTotal(u) }} / {{ u.maxScore || 'Auto' }}</span>
-    </div>
-    
-    <div v-if="u.tasks && u.tasks.length > 0" class="px-3 pb-2 pt-1">
-        <div v-for="t in u.tasks" class="flex justify-between items-center text-xs text-gray-500 py-1 border-b border-gray-50 last:border-0">
-            <span class="pl-2 border-l-2 border-green-200">งาน: {{ t.name }}</span>
-            <span>{{ t.score || 0 }} <span class="text-gray-300">/ {{ t.maxScore || t.fullScore || '-' }}</span></span>
-        </div>
-    </div>
+                        <div v-if="subject.expanded" class="bg-gray-50/50 border-t border-gray-100 p-5 md:p-6 animate-[fadeIn_0.3s_ease-in-out]">
+                            <div class="grid md:grid-cols-2 gap-8">
+                                
+                                <div>
+                                    <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4 flex items-center gap-2">
+                                        <i class="fa-solid fa-folder-open text-blue-300"></i> คะแนนเก็บระหว่างภาค
+                                    </h4>
+                                    <div class="space-y-3">
+                                        <div v-for="(u, uIdx) in subject.units" :key="uIdx" class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm hover:border-blue-200 transition">
+                                            <div class="flex justify-between items-center mb-3 pb-2 border-b border-gray-50">
+                                                <span class="text-sm font-bold text-gray-700">{{ u.name }}</span>
+                                                <span class="font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded-lg text-xs">
+                                                    {{ calcUnitTotal(u) }} <span class="text-blue-300">/</span> {{ u.maxScore || 'Auto' }}
+                                                </span>
+                                            </div>
+                                            
+                                            <div v-if="u.tasks && u.tasks.length > 0" class="space-y-1.5 mb-2">
+                                                <div v-for="(t, tIdx) in u.tasks" :key="tIdx" class="flex justify-between items-center text-xs text-gray-500 py-0.5 hover:bg-gray-50 rounded px-1 transition">
+                                                    <span class="pl-2 border-l-2 border-green-200">{{ t.name }}</span>
+                                                    <span class="font-mono">{{ t.score || 0 }} <span class="text-gray-300">/ {{ t.maxScore || t.fullScore || '-' }}</span></span>
+                                                </div>
+                                            </div>
 
-    <div v-if="u.tests && u.tests.length > 0" class="px-3 pb-2">
-        <div v-for="t in u.tests" class="flex justify-between items-center text-xs text-purple-600 py-1 border-b border-gray-50 last:border-0">
-            <span class="pl-2 border-l-2 border-purple-200">สอบ: {{ t.name }}</span>
-            <span>{{ t.score || t.rawScore || 0 }} <span class="text-gray-300">/ {{ t.maxScore || t.rawFull || t.fullScore || '-' }}</span></span>
-        </div>
-    </div>
-</div>
-                                </div>
-                            </div>
-                            <div>
-                                <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">การสอบวัดผล</h4>
-                                <div class="space-y-3">
-                                    <div class="flex justify-between items-center py-3 px-4 bg-yellow-50 rounded-xl border border-yellow-100">
-                                        <span class="text-sm font-bold text-yellow-800">กลางภาค</span>
-                                        <span class="font-bold text-xl text-yellow-700">{{ parseFloat(subject.midterm?.calcScore||0).toFixed(2) }}</span>
+                                            <div v-if="u.tests && u.tests.length > 0" class="space-y-1.5 pt-2 border-t border-dashed border-gray-100">
+                                                <div v-for="(t, tIdx) in u.tests" :key="tIdx" class="flex justify-between items-center text-xs text-purple-600 py-0.5 hover:bg-purple-50 rounded px-1 transition">
+                                                    <span class="pl-2 border-l-2 border-purple-200">{{ t.name }}</span>
+                                                    <span class="font-mono font-medium">{{ t.score || t.rawScore || 0 }} <span class="text-purple-300">/ {{ t.maxScore || t.rawFull || '-' }}</span></span>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div class="flex justify-between items-center py-3 px-4 bg-purple-50 rounded-xl border border-purple-100">
-                                        <span class="text-sm font-bold text-purple-800">ปลายภาค</span>
-                                        <span class="font-bold text-xl text-purple-700">{{ subject.hideFinal ? 'รอประกาศ' : parseFloat(subject.final?.calcScore||0).toFixed(2) }}</span>
+                                </div>
+                                
+                                <div>
+                                    <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4 flex items-center gap-2">
+                                        <i class="fa-solid fa-pen-nib text-yellow-300"></i> การสอบวัดผล
+                                    </h4>
+                                    <div class="space-y-4">
+                                        <div class="bg-white p-5 rounded-xl border border-yellow-100 shadow-sm flex justify-between items-center relative overflow-hidden group hover:shadow-md transition">
+                                            <div class="absolute right-0 top-0 w-20 h-20 bg-yellow-50 rounded-bl-full -mr-10 -mt-10 z-0 transition-transform group-hover:scale-110"></div>
+                                            <div class="relative z-10">
+                                                <div class="text-sm font-bold text-yellow-800 flex items-center gap-2"><i class="fa-regular fa-calendar-check"></i> สอบกลางภาค</div>
+                                                <div class="text-[10px] text-yellow-600/70 mt-1 font-medium bg-yellow-50 px-2 py-0.5 rounded-full inline-block">
+                                                    คะแนนดิบ: {{ subject.midterm?.mcqScore || 0 }} (ก) + {{ subject.midterm?.writeScore || 0 }} (ข)
+                                                </div>
+                                            </div>
+                                            <div class="relative z-10 text-right">
+                                                <div class="text-3xl font-bold text-yellow-600 tracking-tight">{{ parseFloat(subject.midterm?.calcScore||0).toFixed(2) }}</div>
+                                                <div class="text-[9px] text-yellow-400 font-bold tracking-widest uppercase">Points</div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div v-if="!subject.hideFinal" class="bg-white p-5 rounded-xl border border-purple-100 shadow-sm flex justify-between items-center relative overflow-hidden group hover:shadow-md transition">
+                                            <div class="absolute right-0 top-0 w-20 h-20 bg-purple-50 rounded-bl-full -mr-10 -mt-10 z-0 transition-transform group-hover:scale-110"></div>
+                                            <div class="relative z-10">
+                                                <div class="text-sm font-bold text-purple-800 flex items-center gap-2"><i class="fa-solid fa-flag-checkered"></i> สอบปลายภาค</div>
+                                                <div class="text-[10px] text-purple-600/70 mt-1 font-medium bg-purple-50 px-2 py-0.5 rounded-full inline-block">
+                                                    คะแนนดิบ: {{ subject.final?.mcqScore || 0 }} (ก) + {{ subject.final?.writeScore || 0 }} (ข)
+                                                </div>
+                                            </div>
+                                            <div class="relative z-10 text-right">
+                                                <div class="text-3xl font-bold text-purple-600 tracking-tight">{{ parseFloat(subject.final?.calcScore||0).toFixed(2) }}</div>
+                                                <div class="text-[9px] text-purple-400 font-bold tracking-widest uppercase">Points</div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div v-else class="bg-gray-50 p-6 rounded-xl border border-gray-200 shadow-inner text-center border-dashed group hover:bg-gray-100 transition">
+                                            <div class="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition text-gray-400">
+                                                <i class="fa-solid fa-lock text-xl"></i>
+                                            </div>
+                                            <h4 class="text-sm font-bold text-gray-600">รอประกาศผลสอบ</h4>
+                                            <p class="text-xs text-gray-400 mt-1">คะแนนปลายภาคยังไม่เปิดเผยในขณะนี้</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mt-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-4 rounded-xl shadow-lg shadow-blue-200 flex justify-between items-center transform transition hover:scale-[1.02]">
+                                        <div>
+                                            <div class="text-xs text-blue-100 font-medium opacity-80 uppercase tracking-wider">เกรดเฉลี่ยรายวิชา</div>
+                                            <div class="text-sm font-bold mt-0.5">{{ subject.code || 'วิชานี้' }}</div>
+                                        </div>
+                                        <div class="text-4xl font-bold tracking-tighter drop-shadow-md">
+                                            {{ calculateGrade(calculateSubjectTotal(subject)) }}
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -274,7 +348,7 @@
                     </div>
                 </div>
             </div>
-        </div>
+
 
         <!-- VIEW: Login -->
         <div v-else-if="view === 'login'" class="flex items-center justify-center min-h-[60vh] fade-in">
