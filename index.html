@@ -339,7 +339,7 @@
                                             <div class="text-xs text-blue-100 font-medium opacity-80 uppercase tracking-wider">เกรดเฉลี่ยรายวิชา</div>
                                             <div class="text-sm font-bold mt-0.5">{{ subject.code || 'วิชานี้' }}</div>
                                         </div>
-                                        <div v-if="!subject.hideFinal" :class="getGradeColor(calculateGrade(calculateSubjectTotal(subject)))" class="text-4xl font-bold tracking-tighter drop-shadow-md">
+                                        <div v-if="!subject.hideFinal"class="text-4xl font-bold tracking-normal drop-shadow-md">
                                     {{ calculateGrade(calculateSubjectTotal(subject)) }}
                                 </div>
                                 <div v-else class="text-4xl font-bold tracking-tighter drop-shadow-md">
