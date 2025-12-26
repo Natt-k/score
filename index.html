@@ -512,16 +512,17 @@
                             <tr v-for="(student, sIdx) in batchStudents" :key="student.id" class="hover:bg-gray-50 transition">
                                 <td class="sticky-left text-center text-gray-400 font-mono text-xs bg-white">{{ student.number }}</td>
                                 <td class="sticky-left left-[50px] bg-white font-medium text-gray-800 text-sm whitespace-nowrap pl-4 border-r-2 border-gray-200">{{ student.prefix }}{{ student.firstName }} {{ student.lastName }}</td>
-                                <td v-for="(col, cIdx) in batchColumns" :key="cIdx" class="p-1">
+                                <td v-for="(col, cIdx) in batchColumns" :key="cIdx">
     <input 
-        :disabled="!canEditBatch" 
-        v-model.number="student.scores[col.key]" 
-        type="number" 
-        class="input-cell text-center w-full bg-transparent outline-none disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed" 
-        @keydown.enter.prevent="focusNextRow($event, sIdx, cIdx)"
-        @focus="$event.target.select()"
+        v-model="student.scores[col.key]" 
+        @paste="handleBatchPaste($event, sIdx, cIdx)" 
+        type="number"
+        step="0.01" 
+        class="input-cell focus:ring-2 focus:ring-blue-500"
+        @focus="$event.target.select()" 
     >
 </td>
+
                                 <td class="text-center font-bold text-blue-600 bg-blue-50/30 border-l-2 border-blue-100">{{ calculateBatchRowTotal(student).toFixed(2) }}</td>
                                 <td class="text-center font-bold text-yellow-600 bg-yellow-50/30">{{ calculateGrade(calculateBatchRowTotal(student)) }}</td>
                             </tr>
@@ -1213,6 +1214,46 @@ const canEditBatch = computed(() => {
                 }
             });
         };
+            // ฟังก์ชันสำหรับจัดการการวางข้อมูลแบบตาราง (Excel/Sheets)
+const handleBatchPaste = (e, startRowIdx, startColIdx) => {
+    e.preventDefault(); // ป้องกันการวางแบบปกติ (ที่จะลงในช่องเดียว)
+    
+    // ดึงข้อมูล text จาก Clipboard
+    const clipboardData = (e.clipboardData || window.clipboardData).getData('text');
+    if (!clipboardData) return;
+
+    // แยกข้อมูลเป็นแถว (รองรับทั้ง \r\n และ \n)
+    const rows = clipboardData.split(/\r\n|\n|\r/).filter(row => row.trim() !== '');
+
+    rows.forEach((rowText, rOffset) => {
+        const targetRowIdx = startRowIdx + rOffset;
+        
+        // ถ้าเกินจำนวนนักเรียนที่มี ให้หยุด
+        if (targetRowIdx >= batchStudents.value.length) return;
+
+        // แยกข้อมูลในแถวเป็นคอลัมน์ (ด้วย Tab \t)
+        const cells = rowText.split('\t');
+        const student = batchStudents.value[targetRowIdx];
+
+        cells.forEach((cellValue, cOffset) => {
+            const targetColIdx = startColIdx + cOffset;
+            
+            // ถ้าเกินจำนวนคอลัมน์ที่มี ให้หยุด
+            if (targetColIdx >= batchColumns.value.length) return;
+
+            const col = batchColumns.value[targetColIdx];
+            
+            // แปลงค่าเป็นตัวเลข (ถ้าเป็นค่าว่างให้เป็น 0)
+            let val = cellValue.trim();
+            if (val === '') val = 0;
+            else if (!isNaN(parseFloat(val))) val = parseFloat(val);
+
+            // บันทึกค่าลงในตัวแปร student
+            student.scores[col.key] = val;
+        });
+    });
+};
+
 
 
             const clearRoomData = async () => { if(confirm('Clear Room?')) { loading.value=true; const b=db.batch(); filteredStudents.value.forEach(s=>b.delete(db.collection('artifacts').doc(APP_ID).collection('public').doc('data').collection('students').doc(s.id))); await b.commit(); loading.value=false; } };
@@ -1236,7 +1277,7 @@ const canEditBatch = computed(() => {
                 goHome, login, logout, handleLogin, enterRoom, searchStudent, openStudentModal, saveStudent, deleteStudent, togglePublish, toggleSubject, openScoreModal, openClassMode, addSubject, removeSubject, 
                 addUnit:(i)=>editingSubjects.value[i].units.push({name:'Unit',maxScore:null,tasks:[],tests:[]}), 
                 saveScores, toggleSyncAll, importCSVClick, importCSV, exportRosterCSV, clearRoomData, 
-                openImportModal, downloadTemplate, handleAdvancedImport, openExportModal, executeExport,
+                openImportModal, downloadTemplate, handleAdvancedImport, openExportModal, executeExport,handleBatchPaste,
                 openBatchModeModal, enterBatchMode, saveBatchScores, calculateBatchRowTotal,
                 calcUnitTotal, calculateSubjectTotal, canEditBatch, calculateStudentViewTotal, calculateGrade, getGradeColor, calculateGPA, getLiveSubjectTotal, getLiveUnitTotal, getLiveExamTotal, canEdit, addEditor, removeEditor, focusNextRow
             };
